@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pages/register_page.dart';
+import 'screens/auth/register_page.dart';
 
 void main() {
   runApp(const TaskMateApp());
