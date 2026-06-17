@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
+import 'login_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -53,6 +54,15 @@ class _RegisterPageState extends State<RegisterPage> {
           backgroundColor: Colors.green,
         ),
       );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const LoginPage(),
+        ),
+      );
+
+    }
 
     } else {
 
@@ -161,6 +171,22 @@ class _RegisterPageState extends State<RegisterPage> {
                             "Daftar",
                             style: TextStyle(fontSize: 18),
                           ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LoginPage(),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    "Sudah punya akun? Masuk",
                   ),
                 ),
 
