@@ -16,7 +16,6 @@ class TaskService {
     return _firestore
         .collection('tasks')
         .where('userId', isEqualTo: uid)
-        .orderBy('dueDate')
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => TaskModel.fromMap(

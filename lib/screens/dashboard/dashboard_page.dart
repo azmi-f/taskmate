@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../models/task_model.dart';
+import '../../services/task_service.dart';
+
+import '../../widgets/summary_card.dart';
+import '../../widgets/task_tile.dart';
+
 import '../auth/login_page.dart';
 import '../task/add_task_page.dart';
 
 class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
+  DashboardPage({super.key});
+
+  final TaskService taskService = TaskService();
 
   Future<void> logout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
@@ -21,47 +29,6 @@ class DashboardPage extends StatelessWidget {
     );
   }
 
-  Widget summaryCard({
-    required IconData icon,
-    required String title,
-    required String value,
-    required Color color,
-  }) {
-    return Expanded(
-      child: Card(
-        elevation: 3,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: 20,
-            horizontal: 10,
-          ),
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                color: color,
-                size: 35,
-              ),
-              const SizedBox(height: 10),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 5),
-              Text(title),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -73,13 +40,11 @@ class DashboardPage extends StatelessWidget {
         title: const Text("TaskMate"),
         centerTitle: true,
         backgroundColor: Colors.blue,
-
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            tooltip: "Logout",
             onPressed: () => logout(context),
-          )
+          ),
         ],
       ),
 
@@ -96,128 +61,145 @@ class DashboardPage extends StatelessWidget {
         },
       ),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+      body: StreamBuilder<List<TaskModel>>(
+        stream: taskService.getTasks(),
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        builder: (context, snapshot) {
 
-          children: [
+          if (snapshot.connectionState ==
+              ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
 
-            const Text(
-              "Halo 👋",
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                snapshot.error.toString(),
               ),
-            ),
+            );
+          }
 
-            const SizedBox(height: 5),
+          final tasks = snapshot.data ?? [];
 
-            Text(
-              user?.email ?? "-",
-              style: TextStyle(
-                color: Colors.grey.shade700,
-                fontSize: 16,
-              ),
-            ),
+          final total = tasks.length;
+          final selesai =
+              tasks.where((e) => e.isCompleted).length;
+          final pending = total - selesai;
 
-            const SizedBox(height: 30),
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
 
-            const Text(
-              "Ringkasan Task",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
 
-            const SizedBox(height: 15),
-
-            Row(
               children: [
 
-                summaryCard(
-                  icon: Icons.list_alt,
-                  title: "Total",
-                  value: "0",
-                  color: Colors.blue,
+                Text(
+                  "Halo 👋",
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineMedium,
                 ),
 
-                const SizedBox(width: 10),
-
-                summaryCard(
-                  icon: Icons.check_circle,
-                  title: "Selesai",
-                  value: "0",
-                  color: Colors.green,
+                Text(
+                  user?.email ?? "",
+                  style: TextStyle(
+                    color: Colors.grey.shade700,
+                  ),
                 ),
 
-                const SizedBox(width: 10),
+                const SizedBox(height: 25),
 
-                summaryCard(
-                  icon: Icons.pending_actions,
-                  title: "Pending",
-                  value: "0",
-                  color: Colors.orange,
+                Row(
+                  children: [
+
+                    SummaryCard(
+                      icon: Icons.list_alt,
+                      title: "Total",
+                      value: total.toString(),
+                      color: Colors.blue,
+                    ),
+
+                    const SizedBox(width: 10),
+
+                    SummaryCard(
+                      icon: Icons.check_circle,
+                      title: "Selesai",
+                      value: selesai.toString(),
+                      color: Colors.green,
+                    ),
+
+                    const SizedBox(width: 10),
+
+                    SummaryCard(
+                      icon: Icons.pending_actions,
+                      title: "Pending",
+                      value: pending.toString(),
+                      color: Colors.orange,
+                    ),
+
+                  ],
                 ),
+
+                const SizedBox(height: 30),
+
+                const Text(
+                  "Daftar Task",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                if (tasks.isEmpty)
+
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(30),
+                      child: Center(
+                        child: Column(
+                          children: const [
+
+                            Icon(
+                              Icons.assignment_outlined,
+                              size: 60,
+                              color: Colors.grey,
+                            ),
+
+                            SizedBox(height: 15),
+
+                            Text(
+                              "Belum ada task",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight:
+                                    FontWeight.bold,
+                              ),
+                            ),
+
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+
+                else
+
+                  ...tasks.map(
+                    (task) => TaskTile(
+                      task: task,
+                    ),
+                  ),
 
               ],
             ),
-
-            const SizedBox(height: 30),
-
-            const Text(
-              "Tugas Hari Ini",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: const Padding(
-                padding: EdgeInsets.all(25),
-                child: Center(
-                  child: Column(
-                    children: [
-
-                      Icon(
-                        Icons.assignment_outlined,
-                        size: 60,
-                        color: Colors.grey,
-                      ),
-
-                      SizedBox(height: 15),
-
-                      Text(
-                        "Belum ada task",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      SizedBox(height: 8),
-
-                      Text(
-                        "Tekan tombol + untuk menambahkan task pertama Anda.",
-                        textAlign: TextAlign.center,
-                      ),
-
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
