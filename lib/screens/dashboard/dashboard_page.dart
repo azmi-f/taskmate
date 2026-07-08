@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../config/app_colors.dart';
+
 import '../../models/task_model.dart';
 import '../../services/task_service.dart';
 
@@ -34,12 +36,12 @@ class DashboardPage extends StatelessWidget {
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: AppColors.background,
 
       appBar: AppBar(
         title: const Text("TaskMate"),
         centerTitle: true,
-        backgroundColor: Colors.blue,
+        backgroundColor: AppColors.primary,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -120,7 +122,7 @@ class DashboardPage extends StatelessWidget {
                       icon: Icons.list_alt,
                       title: "Total",
                       value: total.toString(),
-                      color: Colors.blue,
+                      color: AppColors.primary,
                     ),
 
                     const SizedBox(width: 10),
@@ -129,7 +131,7 @@ class DashboardPage extends StatelessWidget {
                       icon: Icons.check_circle,
                       title: "Selesai",
                       value: selesai.toString(),
-                      color: Colors.green,
+                      color: AppColors.success,
                     ),
 
                     const SizedBox(width: 10),
@@ -138,7 +140,7 @@ class DashboardPage extends StatelessWidget {
                       icon: Icons.pending_actions,
                       title: "Pending",
                       value: pending.toString(),
-                      color: Colors.orange,
+                      color: AppColors.warning,
                     ),
 
                   ],
