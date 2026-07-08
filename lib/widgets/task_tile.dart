@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/task_model.dart';
 import '../services/task_service.dart';
+import '../screens/task/edit_task_page.dart';
 
 class TaskTile extends StatelessWidget {
   final TaskModel task;
@@ -107,17 +108,18 @@ class TaskTile extends StatelessWidget {
 
             switch (value) {
 
-              case "edit":
+            case "edit":
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      "Fitur Edit Task akan dibuat berikutnya.",
-                    ),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => EditTaskPage(
+                    task: task,
                   ),
-                );
+                ),
+              );
 
-                break;
+              break;
 
               case "delete":
 
